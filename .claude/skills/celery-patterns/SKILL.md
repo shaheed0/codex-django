@@ -8,14 +8,14 @@ description: Celery task patterns including task definition, retry strategies, p
 ## Core Philosophy
 
 - **Idempotent tasks**: Running a task twice must produce the same result
-- **Pass IDs, not objects**: Arguments must be JSON-serializable
+- **Pass primitive identifiers, not objects**: Arguments must be JSON-serializable
 - **Always handle failures**: Log errors, never swallow exceptions silently
 - **Proper retry strategies**: Use exponential backoff for external services
 
 ## Task Design
 
 ### Structure
-- Place tasks in `apps/<app>/tasks.py`
+- Place tasks in `<app>/tasks.py`
 - Use `@shared_task` for reusable tasks across projects
 - Use `bind=True` when needing access to task instance (retries, task ID, state updates)
 - Add type hints to task signatures
@@ -38,6 +38,8 @@ description: Celery task patterns including task definition, retry strategies, p
 - Use `retry_jitter=True` to prevent thundering herd
 - Set `retry_backoff_max` to cap maximum wait time
 - Use `autoretry_for` tuple for automatic retry on specific exceptions
+- Set `queue` to be same as the `<app>` name.
+
 
 ## Idempotency Patterns
 
@@ -52,7 +54,7 @@ Use database constraints to prevent duplicate processing
 
 ## Periodic Tasks (Beat)
 
-- Configure schedules in `config/celery.py` using `beat_schedule`
+- Configure schedules in `<project_name>/celery.py` using `beat_schedule`
 - Use `crontab()` for time-based schedules
 - Use float values for interval-based schedules (seconds)
 - Keep periodic tasks lightweight; spawn subtasks for heavy work
@@ -68,6 +70,5 @@ Use database constraints to prevent duplicate processing
 
 ## Commands
 
-- Worker: `uv run celery -A config worker -l info`
-- Beat: `uv run celery -A config beat -l info`
-- Monitoring: `uv run celery -A config flower`
+- Worker: `celery -A <project_name> worker -l info -Q <project_name>`
+- Beat: `celery -A <project_name> beat -l info`
